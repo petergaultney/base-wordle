@@ -40,12 +40,26 @@ def test_lots_of_random_bytes():
             )
 
 
+def test_having_exactly_eight_bytes_results_in_special_encodings():
+    assert encode(b"76543210") == "DirtyJazzyStoryRadarCrossFatalFlashZilch"
+    assert encode(b"76543211") == "DirtyJazzyStoryRadarCrossFatalFlashWhole"
+    assert encode(b"76543212") == "DirtyJazzyStoryRadarCrossFatalFloatZilch"
+    assert encode(b"01234567") == "CrashHairySpawnPolarErrorRebelOnionWhole"
+    assert encode(b"01234568") == "CrashHairySpawnPolarErrorRebelOrbitZilch"
+    assert encode(b"01234569") == "CrashHairySpawnPolarErrorRebelOrbitWhole"
+
+
+def test_having_exactly_eight_bytes_results_in_no_extra_zero_bytes():
+    bs = b"76543212"
+    assert decode(encode(bs))[-1] == int(bs[-1])
+    assert len(decode(encode(bs))) == 8
+
+
 def test_pad_digits_two():
     assert decode(encode(b"0123456789", pad_digits=2)) == b"0123456789"
 
 
-# parameterize this with 0, 1, 2, and 3
-@pytest.mark.parametrize("pad_digits", [0, 1, 2, 3])
+@pytest.mark.parametrize("pad_digits", [0, 1, 2, 3, 4, 5, 6])
 def test_lots_of_random_bytes(pad_digits):
     for n in range(100):
         for i in range(10):
