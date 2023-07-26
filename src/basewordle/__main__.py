@@ -3,4 +3,4 @@ import sys
 from .code import decode
 
 if __name__ == "__main__":
-    decode(sys.argv[1])
+    print(" ".join([f"{b:_b}" for b in decode(sys.argv[1])]))
