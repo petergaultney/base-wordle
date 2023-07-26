@@ -167,32 +167,35 @@ def encode(_bytes: bytes, pad_digits: int = 0, titlecase: bool = True) -> str:
     # whether we're emitting digits or words and emit the last
     # characters with some overflow bits.  Those overflow bits will
     # always be zero in order to make the encoding deterministic.
+    def _select_lowest_and_leftshift(n: int) -> int:
+        nonlocal bits_defined
+        select_lowest = (1 << min(bits_defined, n)) - 1  # all ones (e.g. 0x7F)
+        leftshift = n - bits_defined
+        bits_defined -= n
+        return (bit_accum & select_lowest) << leftshift
+
     allowed_digits = pad_digits - consecutive_digits
     while bits_defined > 0 and allowed_digits * 3 >= bits_defined:
         # we can emit a digit or two to satisfy the encoding
         # and it will be most efficient.
+        encoded_str += _DIGIT_from_bit[_select_lowest_and_leftshift(3)]
 
-        ander = (1 << min(bits_defined, 3)) - 1
-        leftshift = 3 - bits_defined
-        digit = _DIGIT_from_bit[(bit_accum & ander) << leftshift]
-        encoded_str += digit
-        bits_defined -= 3
-
-    if bits_defined > 0:
-        if bits_defined == 1:
-            # danger! encoding this as a full word
-            # will make the encoding look like we intended to encode an extra full byte.
-            # therefore, we instead encode the one remaining bit specially.
-            encoded_str += title(_SPECIAL_WORDS[bit_accum & 1])
-            bits_defined -= 1
-        else:
-            ander = (1 << min(bits_defined, 9)) - 1
-            leftshift = 9 - bits_defined
-            print(
-                f"{bits_defined} bits defined - anding by {bin(ander)} and leftshifting by {leftshift}"
-            )
-            encoded_str += title(_wordlist[(bit_accum & ander) << leftshift])
-            bits_defined -= 9
+    if bits_defined == 1:
+        # danger! encoding this as a full word
+        # will make the encoding look like we intended to encode an extra full byte.
+        # therefore, we instead encode the one remaining bit specially.
+        encoded_str += title(_SPECIAL_WORDS[bit_accum & 1])
+        bits_defined -= 1
+    elif bits_defined > 0:
+        # encoded_
+        select_lowest = (1 << min(bits_defined, 9)) - 1
+        leftshift = 9 - bits_defined
+        logger.debug(
+            "% bits defined - selecting lowest and leftshifting by %",
+            bits_defined,
+            leftshift,
+        )
+        encoded_str += title(_wordlist[_select_lowest_and_leftshift(9)])
 
     assert bits_defined <= 0, (bits_defined, pad_digits, byte_pos, bin(bit_accum))
     return encoded_str

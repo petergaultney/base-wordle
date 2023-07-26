@@ -1,5 +1,7 @@
 import os
 
+import pytest
+
 from basewordle import decode, encode
 
 
@@ -28,12 +30,32 @@ def test_lots_of_random_bytes():
     for n in range(100):
         for i in range(10):
             the_bytes = os.urandom(n)
-            assert len(the_bytes) == n
-            assert isinstance(the_bytes, bytes)
-            print("the_bytes", _bytes(the_bytes))
-
             encoded = encode(the_bytes)
-            print("encoded", encoded)
             result_bytes = decode(encoded)
-            print("result bytes", _bytes(result_bytes))
-            assert result_bytes == the_bytes, (n, i, the_bytes)
+            assert result_bytes == the_bytes, (
+                n,
+                i,
+                _bytes(the_bytes),
+                _bytes(result_bytes),
+            )
+
+
+def test_pad_digits_two():
+    assert decode(encode(b"0123456789", pad_digits=2)) == b"0123456789"
+
+
+# parameterize this with 0, 1, 2, and 3
+@pytest.mark.parametrize("pad_digits", [0, 1, 2, 3])
+def test_lots_of_random_bytes(pad_digits):
+    for n in range(100):
+        for i in range(10):
+            the_bytes = os.urandom(n)
+            encoded = encode(the_bytes, pad_digits=pad_digits)
+            result_bytes = decode(encoded)
+            print(n, i, encoded, _bytes(the_bytes))
+            assert result_bytes == the_bytes, (
+                n,
+                i,
+                _bytes(the_bytes),
+                _bytes(result_bytes),
+            )
