@@ -20,11 +20,24 @@ if __name__ == "__main__":
         default=0,
         help="A more efficient encoding that embeds some digits too.",
     )
+    parser.add_argument(
+        "--limit",
+        type=int,
+        default=0,
+        help="Only base-wordle the first N bytes of the file.",
+    )
+    parser.add_argument(
+        "--hex",
+        help="Decode a hex string into bytes, then encode as base-wordle.",
+    )
     args = parser.parse_args()
 
     the_file = Path(args.file)
     if the_file.exists() and the_file.stat().st_size > 0:
-        print(encode(the_file.read_bytes(), pad_digits=args.pad_digits))
+        the_bytes = the_file.read_bytes()
+        if args.limit:
+            the_bytes = the_bytes[: args.limit]
+        print(encode(the_bytes, pad_digits=args.pad_digits))
     else:
         with open(the_file, "wb") as f:
             f.write(decode(sys.stdin.read()))
