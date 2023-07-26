@@ -7,7 +7,7 @@ letter words standing in for each set of 9 bits... mostly.
 9 bits may seem crazy, but there are a few advantages:
 
 1. Every word can be five letters long, so the encoded string length
-   has a linear relationship to the source data.
+   has a stepwise linear relationship to the source data.
 2. Every word can be uniquely pronounceable, such that there is no
    ambiguity when restricted to the list of common 5 letter English
    words.
