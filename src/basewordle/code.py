@@ -38,6 +38,8 @@ logger = getLogger(__name__)
 def decode(_str: str) -> bytes:
     """Decode a base-wordle string into an array of bytes."""
     # fundamentally big-endian, since bit 8 is 'next to' bit 9 in the string
+    if not _str:
+        return b""
     decoded_bytes = bytearray()
     char_pos = 0
 
@@ -46,6 +48,7 @@ def decode(_str: str) -> bytes:
 
     while char_pos < len(_str):
         word_match = _WORD.match(_str, char_pos)
+        digit_match = _DIGIT.match(_str, char_pos)
         if word_match:
             word = _str[char_pos : char_pos + 5].lower()
             assert len(word) == 5
@@ -67,9 +70,7 @@ def decode(_str: str) -> bytes:
                 )
 
             char_pos += 5
-
-        digit_match = _DIGIT.match(_str, char_pos)
-        if digit_match:
+        elif digit_match:
             digit = _str[char_pos]
             if digit in _VALUE_from_digit:
                 bits_defined += 3
@@ -87,6 +88,9 @@ def decode(_str: str) -> bytes:
                     f"Invalid digit {digit} for base-wordle at position {char_pos + 1}"
                 )
             char_pos += 1
+        else:
+            break
+
         while bits_defined >= 8:
             # we have at least one byte to write, starting with the 'highest 8 bits'
             decoded_bytes.append(bit_accum >> (bits_defined - 8) & 0xFF)

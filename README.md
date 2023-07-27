@@ -53,4 +53,24 @@ remember that for long enough to switch browser tabs!
 
 Numbers can make these things even easier to communicate!
 
-...docs coming soon.
+When encoding, you can add one or more digits after each 5-letter word.
+
+Numbers actually encode more information per character, and most of
+them are one syllable, easy to read, and easy to remember.
+
+This behavior is not enabled by default but is available via the
+minimal CLI and also via the `encode` Python function.
+
+# Installation/Usage
+
+`pip install basewordle`
+
+* encode:
+
+`cat <file> | python -m basewordle`
+`python -m basewordle --input-file <file>`
+
+* decode:
+
+`echo "CrashHairySpawnPolarErrorRebelOrbitZilch" | python -m basewordle -d > output.b`
+`python -m basewordle -d --input-file input.b --output-file output.b`

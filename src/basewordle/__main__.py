@@ -1,18 +1,21 @@
-"""CLI for base-wordle. Must provide either a string to decode or a path to file to encode."""
+"""CLI for base-wordle.
+
+With no options, base-wordle reads raw data from stdin and writes
+encoded data to stdout.
+
+"""
 import argparse
 import sys
-from pathlib import Path
 
 from .code import decode, encode
 
-if __name__ == "__main__":
+
+def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "file",
-        help=(
-            "Encode file if it exists and is non-empty."
-            " Otherwise, read stdin and decode the input string into the file."
-        ),
+        "-d",
+        action="store_true",
+        help="Decode incoming data",
     )
     parser.add_argument(
         "--pad-digits",
@@ -20,24 +23,31 @@ if __name__ == "__main__":
         default=0,
         help="A more efficient encoding that embeds some digits too.",
     )
-    parser.add_argument(
-        "--limit",
-        type=int,
-        default=0,
-        help="Only base-wordle the first N bytes of the file.",
-    )
-    parser.add_argument(
-        "--hex",
-        help="Decode a hex string into bytes, then encode as base-wordle.",
-    )
+    parser.add_argument("--input-file", "-i")
+    parser.add_argument("--output-file", "-o")
     args = parser.parse_args()
 
-    the_file = Path(args.file)
-    if the_file.exists() and the_file.stat().st_size > 0:
-        the_bytes = the_file.read_bytes()
-        if args.limit:
-            the_bytes = the_bytes[: args.limit]
-        print(encode(the_bytes, pad_digits=args.pad_digits))
+    if args.d:
+        reader = sys.stdin  # decode string/text
+        if args.input_file:
+            reader = open(args.input_file)
+        writer = sys.stdout.buffer
+        if args.output_file:
+            writer = open(args.output_file, "wb")
+
+        for line in reader.readlines():
+            writer.write(decode(line.rstrip()))
+
     else:
-        with open(the_file, "wb") as f:
-            f.write(decode(sys.stdin.read()))
+        reader = sys.stdin.buffer  # encode binary data
+        if args.input_file:
+            reader = open(args.input_file, "rb")
+        writer = sys.stdout
+        if args.output_file:
+            writer = open(args.output_file, "w")
+
+        print(encode(reader.read(), pad_digits=args.pad_digits), file=writer)
+
+
+if __name__ == "__main__":
+    main()

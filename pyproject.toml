@@ -17,3 +17,6 @@ pytest = "^7.4.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+"basewordle" = "basewordle.__main__:main"
